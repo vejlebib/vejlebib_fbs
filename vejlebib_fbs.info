@@ -1,0 +1,6 @@
+name = Vejlebib FBS
+description = Module that tries to overcome some shortcomings in early version of FBS
+package = Ding!
+core = 7.x
+
+dependencies[] = ding_availability

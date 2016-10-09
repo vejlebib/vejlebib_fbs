@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file
+ *
+ * Vejlebib FBS module file.
+ */
+
+/**
+ * Implements hook_menu_alter()
+ */
+function vejlebib_fbs_menu_alter(&$items) {
+  $items['ding_availability/holdings']['page callback'] = 'vejlebib_fbs_holdings';
+}
+
+
+/**
+ * @param array $provider_ids
+ *   Providers ID's to fetch holdings information for.
+ */
+function vejlebib_fbs_holdings($provider_ids) {
+  $provider_ids = explode(',', $provider_ids);
+  // Let the original callback genereate the table render array.
+  $items = ding_availability_holdings($provider_ids);
+
+  // Returns an empty array if provider returned FALSE.
+  if ($items) {
+    // NOTE: FBS doesn't really support multiple ids atm.
+    $provider_id = reset($provider_ids);
+    $entity = ding_entity_load(ding_provider_build_entity_id($provider_id));
+    // Placement suffix.
+    $suffix = '';
+
+    $classification = $entity->getClassification();
+    //If non-fiction add the classifation. Returns empty string if 'sk'.
+    if ($classification) {
+      $suffix = ' > ' . $classification;
+    }
+    // Else look for a creator of type oss:sort.
+    else if (isset($entity->reply->record['dc:creator']['oss:sort'])) {
+      // This will be an array. Assume the first creator should be shown.
+      $suffix = ' > ' . reset($entity->reply->record['dc:creator']['oss:sort']);
+    }
+
+    // Insert suffix for each holdings row.
+    if (isset($items[$provider_id])) {
+      foreach ($items[$provider_id]['html']['holdings']['#rows'] as &$row) {
+        $row['placement'] .= $suffix;
+      }
+    }
+  }
+
+  drupal_json_output($items);
+}
