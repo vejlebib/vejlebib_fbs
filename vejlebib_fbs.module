@@ -43,7 +43,7 @@ function vejlebib_fbs_holdings($provider_ids) {
     }
 
     // Insert suffix for each holdings row.
-    if (isset($items[$provider_id])) {
+    if ($suffix && isset($items[$provider_id])) {
       foreach ($items[$provider_id]['html']['holdings']['#rows'] as &$row) {
         $row['placement'] .= $suffix;
       }
