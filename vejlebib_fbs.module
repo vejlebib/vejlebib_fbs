@@ -20,10 +20,10 @@ function vejlebib_fbs_menu_alter(&$items) {
  */
 function vejlebib_fbs_holdings($provider_ids) {
   $provider_ids = explode(',', $provider_ids);
-  // Let the original callback genereate the table render array.
-  $items = ding_availability_holdings($provider_ids);
+  $suffix = '';
 
-  // Returns an empty array if provider returned FALSE.
+  $items = ding_provider_invoke('availability', 'holdings', $provider_ids);
+
   if ($items) {
     // NOTE: FBS doesn't really support multiple ids atm.
     $provider_id = reset($provider_ids);
@@ -34,21 +34,96 @@ function vejlebib_fbs_holdings($provider_ids) {
     $classification = $entity->getClassification();
     //If non-fiction add the classifation. Returns empty string if 'sk'.
     if ($classification) {
-      $suffix = ' > ' . $classification;
+      $suffix = $classification;
     }
     // Else look for a creator of type oss:sort.
     else if (isset($entity->reply->record['dc:creator']['oss:sort'])) {
       // This will be an array. Assume the first creator should be shown.
-      $suffix = ' > ' . reset($entity->reply->record['dc:creator']['oss:sort']);
+      $suffix = reset($entity->reply->record['dc:creator']['oss:sort']);
+    }
+  }
+  else {
+    $items = array();
+  }
+
+  foreach ($items as &$item) {
+    $item += array(
+      'reservable' => FALSE,
+      'available' => FALSE,
+      'holdings' => array(),
+      'ordered_count' => 0,
+    );
+
+    // Marks internet resources as available.
+    if ($item['is_internet']) {
+      $item['available'] = TRUE;
     }
 
-    // Insert suffix for each holdings row.
-    if ($suffix && isset($items[$provider_id])) {
-      foreach ($items[$provider_id]['html']['holdings']['#rows'] as &$row) {
-        $row['placement'] .= $suffix;
+    _ding_availability_text($item);
+
+    // Support for creating the html here instead of in the provider.
+    // The provider contains a location array, total_count, available_count,
+    // reserved_count, reservable_count, ordered_count.
+    // We assume that the provider supports this, if it didn't deliver html.
+    if (!isset($item['html'])) {
+      $header = array(
+        'placement' => t('Placement'),
+        'copies' => t('Copies'),
+        'available' => t('At home'),
+      );
+
+      $attributes = array(
+        'class' => array('availability-holdings-table'),
+      );
+
+      // check if there are items in acquisition
+      foreach ($item['holdings'] as $holding) {
+        $item['ordered_count'] += (isset($holding['ordered_count'])) ? (int) $holding['ordered_count'] : 0;
       }
+      // if yes, add a column
+      if ($item['ordered_count']) {
+        $header['acquisition'] = t('In acquisition');
+      }
+
+      $rows = array();
+      $copies = 0;
+      $closest_loan = NULL;
+      foreach ($item['holdings'] as $holding) {
+        // This item is considered to be waited for.
+        // Next, the number of holdings is compared to reserved ones.
+        // Also keep the next loan date.
+        if (empty($item['available']) && !empty($holding['available_from'])) {
+          $next_loan_time = strtotime($holding['available_from']);
+          $copies++;
+          if (empty($closest_loan) || $closest_loan < $next_loan_time) {
+            $closest_loan = $next_loan_time;
+          }
+        }
+
+        if ($suffix) {
+          $holding['placement'][] = $suffix;
+        }
+
+        $rows[] = ding_availability_holdings_row($holding, $item['ordered_count']);
+      }
+
+      // Theme the output.
+      $item['html'] = theme('ding_holdings', array(
+        'holdings' => array(
+          '#theme' => 'table',
+          '#header' => $header,
+          '#rows' => $rows,
+          '#attributes' => $attributes,
+        ),
+        'total_count' => (int) $item['total_count'],
+        'reserved_count' => (int) $item['reserved_count'],
+        'closest_loan' => (count($item['holdings']) == $copies) ? ding_availability_holding_format_time($closest_loan) : NULL,
+        'ordered_count' => (int) $item['ordered_count'],
+        'total_plus_ordered_count' => (int) $item['total_count'] + (int) $item['ordered_count'],
+      ));
     }
   }
 
   drupal_json_output($items);
 }
+
