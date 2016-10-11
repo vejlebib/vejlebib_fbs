@@ -48,7 +48,7 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
       $suffix = $classification;
     }
     // Else look for a creator of type oss:sort.
-    else if (isset($entity->reply->record['dc:creator']['oss:sort'])) {
+    else if (!empty($entity->reply->record['dc:creator']['oss:sort'])) {
       // This will be an array. Assume the first creator should be shown.
       $suffix = reset($entity->reply->record['dc:creator']['oss:sort']);
     }
