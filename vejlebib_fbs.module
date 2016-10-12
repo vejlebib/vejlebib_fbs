@@ -57,8 +57,10 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
       $suffix = reset($entity->reply->record['dc:creator']['oss:sort']);
     }
 
-    foreach ($vars['holdings']['#rows'] as &$row) {
-      $row['placement'] .= ' > ' . $suffix;
+    if ($suffix) {
+      foreach ($vars['holdings']['#rows'] as &$row) {
+        $row['placement'] .= ' > ' . $suffix;
+      }
     }
   }
 }
