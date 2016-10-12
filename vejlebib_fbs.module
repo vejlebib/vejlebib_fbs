@@ -42,9 +42,8 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
     // Placement suffix.
     $suffix = '';
 
-    $classification = $entity->getClassification();
     //If non-fiction add the classifation. Returns empty string if 'sk'.
-    if ($classification) {
+    if ($classification = $entity->getClassification()) {
       $suffix = $classification;
 
       if ($classificationText = $entity->getClassificationText()) {
