@@ -45,10 +45,6 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
     //If non-fiction add the classifation. Returns empty string if 'sk'.
     if ($classification = $entity->getClassification()) {
       $suffix = $classification;
-
-      if ($classificationText = $entity->getClassificationText()) {
-        $suffix .= ' (' . $classificationText . ')';
-      }
     }
     // Else look for a creator of type oss:sort.
     else if (!empty($entity->reply->record['dc:creator']['oss:sort'])) {
