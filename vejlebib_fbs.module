@@ -69,8 +69,11 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
         if ($field652b = vejlebib_fbs_get_marc_field($entity, '652', 'b')) {
           $suffix .= ' ' . $field652b;
         }
-        else if ($field652h = vejlebib_fbs_get_marc_field($entity, '652', 'h')) {
-          $suffix .= ', ' . $field652h;
+        else if ($field652a = vejlebib_fbs_get_marc_field($entity, '652', 'a')) {
+          $suffix .= ' ' . $field652a;
+          if ($field652h = vejlebib_fbs_get_marc_field($entity, '652', 'h')) {
+            $suffix .= ', ' . $field652h;
+          }
         }
       }
       // Generate and append the standard suffix for ALMA shelf_mark.
