@@ -67,7 +67,7 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
 
         // Additonal descriptors from the DK5 classification.
         if ($field652b = vejlebib_fbs_get_marc_field($entity, '652', 'b')) {
-          $suffix .= ', ' . $field652b;
+          $suffix .= ' ' . $field652b;
         }
         else if ($field652h = vejlebib_fbs_get_marc_field($entity, '652', 'h')) {
           $suffix .= ', ' . $field652h;
