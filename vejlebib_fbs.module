@@ -69,7 +69,7 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
         if ($field652b = vejlebib_fbs_get_marc_field($entity, '652', 'b')) {
           $suffix .= ', ' . $field652b;
         }
-        else if ($field652h = vejlebib_fbs_get_marc_field($entity, '652', 'm')) {
+        else if ($field652h = vejlebib_fbs_get_marc_field($entity, '652', 'h')) {
           $suffix .= ', ' . $field652h;
         }
       }
