@@ -76,18 +76,24 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
           }
         }
       }
-      // Generate and append the standard suffix for ALMA shelf_mark.
+
+      // Generate and append the standard suffix for ALMA shelf_mark. We prefer
+      // marc fields in the following order:
       $candidates = array(
         '100.a',
         '110.a',
         '239.a',
         '245.a',
       );
-      // Add a separator if something was already appended.
-      if ($suffix) {
-        $suffix .= ' >';
+
+      if ($shelf_mark = vejlebib_fbs_pick_marc_field($entity, $candidates)) {
+        // If we found a shelf_mark and there's already something in suffix,
+        // remember to add a seperator.
+        if (trim($suffix)) {
+          $suffix .= ' >';
+        }
+        $suffix .= ' ' . vejlebib_fbs_pick_marc_field($entity, $candidates);
       }
-      $suffix .= ' ' . vejlebib_fbs_pick_marc_field($entity, $candidates);
     }
     else {
       $entity = ding_entity_load($ding_entity_id);
@@ -104,7 +110,7 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
       }
     }
 
-    if ($suffix) {
+    if (trim($suffix)) {
       foreach ($vars['holdings']['#rows'] as &$row) {
         $row['placement'] .= ' > ' . $suffix;
       }
@@ -150,12 +156,11 @@ function vejlebib_fbs_pick_marc_field($entity, array $candidates) {
       return $field_value;
     }
   }
-  return '';
+  return NULL;
 }
 
 /**
- * Tranlate a marc string code to a human readable label. This is convenient to
- * use, since it returns an empty string if no translation was found.
+ * Tranlate a marc string code to a human readable label.
  */
 function vejlebib_fbs_translate_marc($code, $field) {
   $translations = _vejlebib_fbs_get_marc_039a_translations();
@@ -167,7 +172,7 @@ function vejlebib_fbs_translate_marc($code, $field) {
     $translations = _vejlebib_fbs_get_marc_039b_translations();
   }
 
-  return isset($translations[$code]) ? $translations[$code] : '';
+  return isset($translations[$code]) ? $translations[$code] : NULL;
 }
 
 /**
