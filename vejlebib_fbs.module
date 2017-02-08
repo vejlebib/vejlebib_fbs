@@ -89,7 +89,7 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
       if ($shelf_mark = vejlebib_fbs_pick_marc_field($entity, $candidates)) {
         // If we found a shelf_mark and there's already something in suffix,
         // remember to add a seperator.
-        if (trim($suffix)) {
+        if ($suffix) {
           $suffix .= ' >';
         }
         $suffix .= ' ' . vejlebib_fbs_pick_marc_field($entity, $candidates);
@@ -110,7 +110,7 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
       }
     }
 
-    if (trim($suffix)) {
+    if ($suffix) {
       foreach ($vars['holdings']['#rows'] as &$row) {
         $row['placement'] .= ' > ' . $suffix;
       }
@@ -139,7 +139,7 @@ function vejlebib_fbs_get_marc_field($entity, $field, $subfield = NULL) {
 
   // Ensure single value returned if subfield is specified.
   if (isset($subfield) && is_array($value)) {
-    $value = reset($value);
+    $value = trim(reset($value));
   }
 
   return $value ? $value : NULL;
