@@ -90,9 +90,29 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
         // If we found a shelf_mark and there's already something in suffix,
         // remember to add a seperator.
         if ($suffix) {
-          $suffix .= ' >';
+          $suffix .= ' > ';
         }
-        $suffix .= ' ' . vejlebib_fbs_pick_marc_field($entity, $candidates);
+
+        $words = explode(' ', $shelf_mark);
+        $shelf_mark = FALSE;
+
+        // Prefer words marked with a special sign.
+        foreach ($words as &$word) {
+          $word = trim($word);
+          if (strpos($word, '¤') === 0) {
+            $shelf_mark = mb_substr($word, 1);
+          }
+        }
+
+        // If no special mark; use the first word.
+        if (!$shelf_mark) {
+          $shelf_mark = array_values($words)[0];
+        }
+
+        // A neat little trick for mb_ucfirst:
+        // http://stackoverflow.com/questions/2517947/ucfirst-function-for-multibyte-character-encodings#answer-14161325.
+        $shelf_mark = mb_strtoupper(mb_substr($shelf_mark, 0, 1)) . mb_strtolower(mb_substr($shelf_mark, 1));
+        $suffix .= $shelf_mark;
       }
     }
     else {
