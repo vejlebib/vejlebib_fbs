@@ -42,8 +42,7 @@ function vejlebib_fbs_preprocess_ding_holdings(&$vars) {
     $suffix = '';
 
     // Emulate ALMA shelf_mark if possible.
-    if (module_exists('ting_marc')) {
-      $entity = ting_marc_load_object($ding_entity_id);
+    if (module_exists('ting_marc') && $entity = ting_marc_load_object($ding_entity_id)) {
       $field652m = vejlebib_fbs_get_marc_field($entity, '652', 'm');
       $field652o = vejlebib_fbs_get_marc_field($entity, '652', 'o');
 
